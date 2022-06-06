@@ -5,6 +5,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
+import java.util.Arrays;
+
 public class AnimPlayer {
     Texture texture;
     Animation<TextureRegion> animation;
@@ -17,13 +19,13 @@ public class AnimPlayer {
         TextureRegion[][] regions = region.split(region.getRegionWidth()/width, region.getRegionHeight()/height);
         TextureRegion[] regions1 = new TextureRegion[width * height];
 
-
         int cnt=0;
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
                 regions1[cnt++] = regions[i][j];
             }
         }
+
         animation = new Animation<>(1.0f/fps, regions1);
         animation.setPlayMode(mode);
     }

@@ -5,14 +5,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.maps.Map;
 import com.badlogic.gdx.maps.MapLayer;
-import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
-import com.badlogic.gdx.maps.tiled.BaseTmxMapLoader;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
@@ -25,40 +21,45 @@ import java.util.List;
 
 public class MainClass extends ApplicationAdapter {
 	private SpriteBatch batch;
-	private AnimPlayer batmanAnim;
+	//private ShapeRenderer renderer;
 	private Label label;
 	private TiledMap map;
 	private OrthogonalTiledMapRenderer mapRenderer;
 	private OrthographicCamera camera;
 	private List<Coin> coinList;
+	private Texture fon;
+	private MyCharacter chip;
 
-	private int[] foreGrounde, backGrounde;
+	private int[] foreGround, backGround;
 
-	private int x;
+	private int score;
 	
 	@Override
 	public void create () {
+		chip = new MyCharacter();
+		fon = new Texture("fon.png");
 		map = new TmxMapLoader().load("maps/map1.tmx");
 		mapRenderer = new OrthogonalTiledMapRenderer(map);
 
-		foreGrounde = new int[1];
-		foreGrounde[0] = map.getLayers().getIndex("Слой тайлов 2");
-		backGrounde = new int[1];
-		backGrounde[0] = map.getLayers().getIndex("Слой тайлов 1");
+		foreGround = new int[1];
+		foreGround[0] = map.getLayers().getIndex("Слой тайлов 2");
+		backGround = new int[1];
+		backGround[0] = map.getLayers().getIndex("Слой тайлов 1");
 
 		batch = new SpriteBatch();
-		batmanAnim = new AnimPlayer("runRight.png", 8, 1, 16.0f, Animation.PlayMode.LOOP);
-		label = new Label(100);
+		//renderer = new ShapeRenderer();
+
+		label = new Label(50);
 
 		camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		RectangleMapObject o = (RectangleMapObject) map.getLayers().get("Слой объектов 1").getObjects().get("camera");
+		RectangleMapObject o = (RectangleMapObject) map.getLayers().get("Слой объектов 2").getObjects().get("camera");
 		camera.position.x = o.getRectangle().x;
 		camera.position.y = o.getRectangle().y;
-		camera.zoom = 0.25f;
+		camera.zoom = 0.5f;
 		camera.update();
 
 		coinList = new ArrayList<>();
-		MapLayer ml = map.getLayers().get("монетки");
+		MapLayer ml = map.getLayers().get("coins");
 		if (ml != null){
 			MapObjects mo = ml.getObjects();
 			if (mo.getCount()>0){
@@ -76,34 +77,63 @@ public class MainClass extends ApplicationAdapter {
 	public void render () {
 		ScreenUtils.clear(1, 0, 0, 1);
 
-		if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) camera.position.x--;
-		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) camera.position.x++;
+		chip.setWalk(false);
+		if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+			camera.position.x--;
+			chip.setDir(true);
+			chip.setWalk(true);
+		}
+		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+			camera.position.x++;
+			chip.setDir(false);
+			chip.setWalk(true);
+		}
 		if (Gdx.input.isKeyPressed(Input.Keys.UP)) camera.position.y++;
 		if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) camera.position.y--;
+
 		camera.update();
 
-		mapRenderer.setView(camera);
-		mapRenderer.render(backGrounde);
+		batch.begin();
+		batch.draw(fon, 0,0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		batch.end();
 
-		batmanAnim.step(Gdx.graphics.getDeltaTime());
+		mapRenderer.setView(camera);
+		mapRenderer.render(backGround);
 
 		batch.begin();
-		batch.draw(batmanAnim.getFrame(), Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2);
-		label.draw(batch, "Привет Мир!", 0, 0);
+		batch.draw(chip.getFrame(), Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2);
+		label.draw(batch, "Монеток собрано: "+String.valueOf(score), 0, 0);
 
 		for (int i=0;i<coinList.size();i++){
 			coinList.get(i).draw(batch, camera);
+			if (coinList.get(i).isOverlaps(chip.getRect(), camera)) {
+				coinList.remove(i);
+				score++;
+			}
 		}
 
 		batch.end();
 
-		mapRenderer.render(foreGrounde);
+//		Color heroClr = new Color(Color.WHITE);
+//		mapRenderer.render(foreGround);
+//		renderer.setColor(heroClr);
+//		renderer.begin(ShapeRenderer.ShapeType.Line);
+//		for (int i=0;i<coinList.size();i++){
+//			coinList.get(i).shapeDraw(renderer, camera);
+//			if (coinList.get(i).isOverlaps(chip.getRect(), camera)) {
+//				coinList.remove(i);
+//				heroClr = Color.BLUE;
+//			}
+//		}
+//		renderer.setColor(heroClr);
+//		renderer.rect(heroRect.x, heroRect.y, heroRect.width, heroRect.height);
+//		renderer.end();
+
 	}
 	
 	@Override
 	public void dispose () {
 		batch.dispose();
-		batmanAnim.dispose();
 		coinList.get(0).dispose();
 	}
 }
