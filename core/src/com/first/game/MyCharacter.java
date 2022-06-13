@@ -28,19 +28,19 @@ public class MyCharacter {
         TextureRegion tmpTex = null;
         if (!isJump && !isWalk && !dir) {
             idle.step(Gdx.graphics.getDeltaTime());
-            idle.getFrame().flip(false, false);
+            if (idle.getFrame().isFlipX()) idle.getFrame().flip(true, false);
             tmpTex = idle.getFrame();
         } else if (!isJump && !isWalk && dir) {
             idle.step(Gdx.graphics.getDeltaTime());
-            idle.getFrame().flip(true, false);
+            if (!idle.getFrame().isFlipX()) idle.getFrame().flip(true, false);
             tmpTex = idle.getFrame();
         } else  if (!isJump && isWalk && !dir) {
             walkRight.step(Gdx.graphics.getDeltaTime());
-            walkRight.getFrame().flip(false, false);
+            if (walkRight.getFrame().isFlipX()) walkRight.getFrame().flip(true, false);
             tmpTex = walkRight.getFrame();
         } else  if (!isJump && isWalk && dir) {
             walkRight.step(Gdx.graphics.getDeltaTime());
-            walkRight.getFrame().flip(true, false);
+            if (!walkRight.getFrame().isFlipX()) walkRight.getFrame().flip(true, false);
             tmpTex = walkRight.getFrame();
         }
         return tmpTex;
