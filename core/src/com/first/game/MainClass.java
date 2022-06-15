@@ -3,6 +3,7 @@ package com.first.game;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -31,6 +32,7 @@ public class MainClass extends ApplicationAdapter {
 	private Texture fon;
 	private MyCharacter chip;
 	private PhysX physX;
+	private Music music;
 
 	private int[] foreGround, backGround;
 
@@ -83,6 +85,11 @@ public class MainClass extends ApplicationAdapter {
 			}
 		}
 
+		music = Gdx.audio.newMusic(Gdx.files.internal("Soundtracks — Чип и Дейл (Disney, 1989) (www.lightaudio.ru).mp3"));
+		music.setLooping(true);
+		music.setVolume(0.25f);
+		//music.play();
+
 	}
 
 	@Override
@@ -90,17 +97,17 @@ public class MainClass extends ApplicationAdapter {
 		ScreenUtils.clear(0, 0, 0, 1);
 
 		chip.setWalk(false);
-		if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+		if (Gdx.input.isKeyPressed(Input.Keys.LEFT) && physX.cl.isOnGround()) {
 			physX.setHeroForce(new Vector2(-3000, 0));
 			chip.setDir(true);
 			chip.setWalk(true);
 		}
-		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) && physX.cl.isOnGround()) {
 			physX.setHeroForce(new Vector2(3000, 0));
 			chip.setDir(false);
 			chip.setWalk(true);
 		}
-		if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
+		if (Gdx.input.isKeyPressed(Input.Keys.UP) && physX.cl.isOnGround()) {
 			physX.setHeroForce(new Vector2(0, 1300));
 		}
 //		if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) camera.position.y--;
@@ -122,10 +129,14 @@ public class MainClass extends ApplicationAdapter {
 		label.draw(batch, "Монеток собрано: "+String.valueOf(score), 0, 0);
 
 		for (int i=0;i<coinList.size();i++){
-			coinList.get(i).draw(batch, camera);
+			int state;
+			state = coinList.get(i).draw(batch, camera);
 			if (coinList.get(i).isOverlaps(chip.getRect(), camera)) {
-				coinList.remove(i);
-				score++;
+				if (state==0)coinList.get(i).setState();
+				if (state==2){
+					coinList.remove(i);
+					score++;
+				}
 			}
 		}
 		batch.end();
@@ -139,5 +150,7 @@ public class MainClass extends ApplicationAdapter {
 		batch.dispose();
 		coinList.get(0).dispose();
 		physX.dispose();
+		music.stop();
+		music.dispose();
 	}
 }
